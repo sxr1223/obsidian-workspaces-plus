@@ -78,6 +78,69 @@ export default class WorkspacesPlus extends Plugin {
         }
       }, 100);
     });
+
+        this.registerEvent(this.app.workspace.on("file-menu", (menu, file, source) => {
+        menu.addItem((item) => {
+
+            const subMenu = item.setSubmenu();
+
+            for(const workspaceName in this.workspacePlugin.workspaces)
+            {
+              subMenu.addItem((item) => {
+                    item.setTitle(workspaceName)
+                        .onClick((e) => {
+                          const targetArray = this.workspacePlugin.workspaces[workspaceName].main.children[0].children;
+                          const sourceLeaf = this.app.workspace.activeLeaf;
+
+                          const copiedStack = [];
+
+                          for(const stackItem in sourceLeaf['pane-relief:history-v1'].stack)
+                          {
+                            // console.log(sourceLeaf['pane-relief:history-v1'].stack[stackItem]);
+                            copiedStack.push(sourceLeaf['pane-relief:history-v1'].stack[stackItem].raw);
+                          }
+                          const copiedLeaf = {
+                            id: sourceLeaf.id,
+                            "pane-relief:history-v1": {
+                              pos: sourceLeaf['pane-relief:history-v1'].pos,
+                              stack: copiedStack,
+                            },
+                            type: sourceLeaf.type,
+                            state: sourceLeaf.getViewState(),
+                          };
+                          targetArray.push(copiedLeaf);
+                          // console.log("aaaaaaaaaaa")
+                          // console.log(targetArray[1]);
+                          // console.log(sourceLeaf);
+                          // console.log(copiedLeaf);
+                          // console.log("aaaaaaaaaaa")
+
+                          if (!sourceLeaf.pinned)
+                          {
+                            sourceLeaf.detach()
+                          }
+                          workspacePluginPlus.workspacePlugin.saveWorkspace();
+                      });
+                  });
+            }
+
+            item.setTitle("send to workspace...")
+                .setIcon("lucide-layout");
+            //     .onClick((a) => {
+            //     //@ts-ignore
+            //     //this.app.commands.executeCommandById(command.id);
+            //       console.log("aaaaaaaaaaa")
+            //       console.log(this.workspacePlugin.workspaces)
+            //       for(i in this.workspacePlugin.workspaces)
+            //       {
+            //         console.log(i);
+            //       }
+            //       console.log("aaaaaaaaaaa")
+            //       // this.workspacePlugin.saveData();
+            //       // this.app.workspace.getLeaf("tab").openFile(file)
+            // });
+        });
+    }));
   }
 
   backupCoreConfig() {
